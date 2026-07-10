@@ -1,9 +1,11 @@
 import request from 'supertest';
 import { app } from '../src/index';
 import { repository } from '../src/db/repository';
+import { categoryRepository } from '../src/db/category-repository';
 
 beforeEach(() => {
   repository.clear();
+  categoryRepository.clear();
 });
 
 describe('GET /api/todos', () => {
@@ -24,6 +26,22 @@ describe('POST /api/todos', () => {
 
   it('returns 400 when title is missing', async () => {
     const res = await request(app).post('/api/todos').send({});
+    expect(res.status).toBe(400);
+  });
+
+  it('creates a todo with a valid categoryId', async () => {
+    const category = await request(app)
+      .post('/api/categories')
+      .send({ name: 'Work', description: 'Work related tasks' });
+    const res = await request(app)
+      .post('/api/todos')
+      .send({ title: 'Buy milk', categoryId: category.body.id });
+    expect(res.status).toBe(201);
+    expect(res.body.categoryId).toBe(category.body.id);
+  });
+
+  it('returns 400 when categoryId does not exist', async () => {
+    const res = await request(app).post('/api/todos').send({ title: 'Buy milk', categoryId: 999 });
     expect(res.status).toBe(400);
   });
 });
@@ -50,6 +68,24 @@ describe('PATCH /api/todos/:id', () => {
       .send({ completed: true });
     expect(res.status).toBe(200);
     expect(res.body.completed).toBe(true);
+  });
+
+  it('updates categoryId to a valid category', async () => {
+    const category = await request(app).post('/api/categories').send({ name: 'Work' });
+    const created = await request(app).post('/api/todos').send({ title: 'Task' });
+    const res = await request(app)
+      .patch(`/api/todos/${created.body.id}`)
+      .send({ categoryId: category.body.id });
+    expect(res.status).toBe(200);
+    expect(res.body.categoryId).toBe(category.body.id);
+  });
+
+  it('returns 400 when categoryId does not exist', async () => {
+    const created = await request(app).post('/api/todos').send({ title: 'Task' });
+    const res = await request(app)
+      .patch(`/api/todos/${created.body.id}`)
+      .send({ categoryId: 999 });
+    expect(res.status).toBe(400);
   });
 });
 

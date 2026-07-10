@@ -2,6 +2,7 @@ export interface Todo {
   id: number;
   title: string;
   completed: boolean;
+  categoryId: number | null;
   createdAt: string;
 }
 
@@ -17,22 +18,24 @@ export const repository = {
     return todos.find((t) => t.id === id);
   },
 
-  create(title: string): Todo {
+  create(title: string, categoryId: number | null = null): Todo {
     const todo: Todo = {
       id: nextId++,
       title,
       completed: false,
+      categoryId,
       createdAt: new Date().toISOString(),
     };
     todos.push(todo);
     return todo;
   },
 
-  update(id: number, changes: Partial<Pick<Todo, 'title' | 'completed'>>): Todo | undefined {
+  update(id: number, changes: Partial<Pick<Todo, 'title' | 'completed' | 'categoryId'>>): Todo | undefined {
     const todo = todos.find((t) => t.id === id);
     if (!todo) return undefined;
     if (changes.title !== undefined) todo.title = changes.title;
     if (changes.completed !== undefined) todo.completed = changes.completed;
+    if (changes.categoryId !== undefined) todo.categoryId = changes.categoryId;
     return todo;
   },
 
