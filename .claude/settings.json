@@ -1,0 +1,30 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hook-tsc.sh",
+            "timeout": 30,
+            "statusMessage": "型チェック中..."
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.command' | grep -q 'rm -rf' && echo '{\"decision\":\"block\",\"reason\":\"rm -rf は安全のためブロックされています\"}' && exit 2 || true",
+            "timeout": 10,
+            "statusMessage": "コマンドを検証中..."
+          }
+        ]
+      }
+    ]
+  }
+}
