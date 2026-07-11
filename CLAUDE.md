@@ -11,7 +11,12 @@ Claude Codeの主要な5つの指示配信方法を学ぶハンズオン
 - [x] Step 2: Rules の設定
 - [x] Step 3: Hooks の設定
 - [x] Step 4: Skills の作成
-- [ ] Step 5: Subagents の作成
+- [x] Step 5: Subagents の作成
+
+## Subagents（`.claude/agents/`）
+
+- `todo-api-reviewer`: `.claude/rules/` のルールとリソース命名規則への準拠をチェックするコードレビューアー
+- `todo-api-tester`: devサーバーを起動しcurlでエンドポイントの動作を実地確認するエージェント
 
 ## サンプルアプリ構成（Todo API）
 
