@@ -1,5 +1,6 @@
 node_modules/
 dist/
 .claude/settings.local.json
+.claude/stop-test.log
 /tmp/
 .idea/

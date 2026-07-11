@@ -42,6 +42,18 @@
           }
         ]
       }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hook-stop-test.sh",
+            "timeout": 30,
+            "statusMessage": "最終テスト実行中..."
+          }
+        ]
+      }
     ]
   }
 }
