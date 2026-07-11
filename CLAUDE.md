@@ -13,6 +13,13 @@ Claude Codeの主要な5つの指示配信方法を学ぶハンズオン
 - [x] Step 4: Skills の作成
 - [x] Step 5: Subagents の作成
 
+## Hooks（`.claude/settings.json`）
+
+- `PostToolUse`（Edit|Write時）: `hook-tsc.sh` で型チェックを自動実行
+- `PreToolUse`（Bash時）: `rm -rf` を含むコマンドをブロック
+- `SubagentStop`（todo-api-tester|todo-api-reviewer完了時）: `hook-subagent-notify.sh` で通知音を鳴らす
+- `Stop`（応答完了時）: `hook-stop-test.sh` で `npm test` を自動実行。失敗時は1回だけブロックしてClaudeに自律修正を促し（`stop_hook_active` で無限ループを防止）、修正後も直っていなければ `systemMessage` でユーザーに警告する
+
 ## Subagents（`.claude/agents/`）
 
 - `todo-api-reviewer`: `.claude/rules/` のルールとリソース命名規則への準拠をチェックするコードレビューアー
