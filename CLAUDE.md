@@ -19,15 +19,20 @@ Claude Codeの主要な5つの指示配信方法を学ぶハンズオン
 src/
 ├── api/
 │   ├── routes.ts
-│   └── handlers.ts
+│   ├── todo-handlers.ts
+│   └── category-handlers.ts
 ├── db/
-│   └── repository.ts
+│   ├── todo-repository.ts
+│   └── category-repository.ts
 ├── utils/
 │   └── logger.ts
 └── index.ts
 tests/
-└── api.test.ts
+├── todos.test.ts
+└── categories.test.ts
 ```
+
+新しいリソースは `<resource>-repository.ts` / `<resource>-handlers.ts` / `tests/<resource>.test.ts` の命名規則に従う。
 
 Node.js/TypeScript製のシンプルなREST API
 

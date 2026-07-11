@@ -9,7 +9,7 @@ export interface Todo {
 const todos: Todo[] = [];
 let nextId = 1;
 
-export const repository = {
+export const todoRepository = {
   findAll(): Todo[] {
     return [...todos];
   },

@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getTodos, getTodo, createTodo, updateTodo, deleteTodo } from './handlers';
+import { getTodos, getTodo, createTodo, updateTodo, deleteTodo } from './todo-handlers';
 import {
   getCategories,
   getCategory,

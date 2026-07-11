@@ -1,17 +1,17 @@
 import { Request, Response } from 'express';
-import { repository } from '../db/repository';
+import { todoRepository } from '../db/todo-repository';
 import { categoryRepository } from '../db/category-repository';
 import { logger } from '../utils/logger';
 
 export function getTodos(req: Request, res: Response): void {
-  const todos = repository.findAll();
+  const todos = todoRepository.findAll();
   logger.info('GET /todos', { count: todos.length });
   res.json(todos);
 }
 
 export function getTodo(req: Request, res: Response): void {
   const id = parseInt(String(req.params.id), 10);
-  const todo = repository.findById(id);
+  const todo = todoRepository.findById(id);
   if (!todo) {
     res.status(404).json({ error: 'Todo not found' });
     return;
@@ -29,7 +29,7 @@ export function createTodo(req: Request, res: Response): void {
     res.status(400).json({ error: 'categoryId not found' });
     return;
   }
-  const todo = repository.create(title.trim(), categoryId ?? null);
+  const todo = todoRepository.create(title.trim(), categoryId ?? null);
   logger.info('Created todo', { id: todo.id });
   res.status(201).json(todo);
 }
@@ -45,7 +45,7 @@ export function updateTodo(req: Request, res: Response): void {
     res.status(400).json({ error: 'categoryId not found' });
     return;
   }
-  const todo = repository.update(id, { title, completed, categoryId });
+  const todo = todoRepository.update(id, { title, completed, categoryId });
   if (!todo) {
     res.status(404).json({ error: 'Todo not found' });
     return;
@@ -56,7 +56,7 @@ export function updateTodo(req: Request, res: Response): void {
 
 export function deleteTodo(req: Request, res: Response): void {
   const id = parseInt(String(req.params.id), 10);
-  const deleted = repository.delete(id);
+  const deleted = todoRepository.delete(id);
   if (!deleted) {
     res.status(404).json({ error: 'Todo not found' });
     return;

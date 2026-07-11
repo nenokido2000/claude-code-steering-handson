@@ -1,10 +1,10 @@
 import request from 'supertest';
 import { app } from '../src/index';
-import { repository } from '../src/db/repository';
+import { todoRepository } from '../src/db/todo-repository';
 import { categoryRepository } from '../src/db/category-repository';
 
 beforeEach(() => {
-  repository.clear();
+  todoRepository.clear();
   categoryRepository.clear();
 });
 
