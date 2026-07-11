@@ -30,6 +30,18 @@
           }
         ]
       }
+    ],
+    "SubagentStop": [
+      {
+        "matcher": "todo-api-tester|todo-api-reviewer",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hook-subagent-notify.sh",
+            "timeout": 10
+          }
+        ]
+      }
     ]
   }
 }
