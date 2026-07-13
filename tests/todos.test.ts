@@ -2,10 +2,12 @@ import request from 'supertest';
 import { app } from '../src/index';
 import { todoRepository } from '../src/db/todo-repository';
 import { categoryRepository } from '../src/db/category-repository';
+import { tagRepository } from '../src/db/tag-repository';
 
 beforeEach(() => {
   todoRepository.clear();
   categoryRepository.clear();
+  tagRepository.clear();
 });
 
 describe('GET /api/todos', () => {
@@ -42,6 +44,20 @@ describe('POST /api/todos', () => {
 
   it('returns 400 when categoryId does not exist', async () => {
     const res = await request(app).post('/api/todos').send({ title: 'Buy milk', categoryId: 999 });
+    expect(res.status).toBe(400);
+  });
+
+  it('creates a todo with a valid tagId', async () => {
+    const tag = await request(app).post('/api/tags').send({ name: 'urgent' });
+    const res = await request(app)
+      .post('/api/todos')
+      .send({ title: 'Buy milk', tagId: tag.body.id });
+    expect(res.status).toBe(201);
+    expect(res.body.tagId).toBe(tag.body.id);
+  });
+
+  it('returns 400 when tagId does not exist', async () => {
+    const res = await request(app).post('/api/todos').send({ title: 'Buy milk', tagId: 999 });
     expect(res.status).toBe(400);
   });
 });
@@ -85,6 +101,24 @@ describe('PATCH /api/todos/:id', () => {
     const res = await request(app)
       .patch(`/api/todos/${created.body.id}`)
       .send({ categoryId: 999 });
+    expect(res.status).toBe(400);
+  });
+
+  it('updates tagId to a valid tag', async () => {
+    const tag = await request(app).post('/api/tags').send({ name: 'urgent' });
+    const created = await request(app).post('/api/todos').send({ title: 'Task' });
+    const res = await request(app)
+      .patch(`/api/todos/${created.body.id}`)
+      .send({ tagId: tag.body.id });
+    expect(res.status).toBe(200);
+    expect(res.body.tagId).toBe(tag.body.id);
+  });
+
+  it('returns 400 when tagId does not exist', async () => {
+    const created = await request(app).post('/api/todos').send({ title: 'Task' });
+    const res = await request(app)
+      .patch(`/api/todos/${created.body.id}`)
+      .send({ tagId: 999 });
     expect(res.status).toBe(400);
   });
 });
