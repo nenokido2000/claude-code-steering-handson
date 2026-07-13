@@ -12,6 +12,16 @@ Claude Codeの主要な5つの指示配信方法を学ぶハンズオン
 - [x] Step 3: Hooks の設定
 - [x] Step 4: Skills の作成
 - [x] Step 5: Subagents の作成
+- [x] 発展: Hooks × Subagentsによるコードレビュー自動フィードバックループ(下記「発展」参照)
+
+## 発展: Levels of Agentic Engineering との接続
+
+Step 1〜5は上記の「主要5指示配信メソッド」記事に基づくが、Step 5(Subagents)完了後、「Hooksの自動フィードバックループ」と「Subagentsによるコードレビュー」を組み合わせる形で当初の5ステップの範囲を超えて発展した。これは以下の記事が定義する「Agentic Engineeringのレベル」に対応する取り組み。
+
+参考: https://www.bassimeledath.com/blog/levels-of-agentic-engineering
+
+- **レベル6(ハーネスエンジニアリング/自動フィードバックループ)**: 既存の`npm test`ゲートに加えて、`todo-api-reviewer`によるコードレビューもStopフックのゲートに組み込んだ(`hook-stop-test.sh` + `.claude/review-verdict.jq`)。「テスト・型チェックだけでなくコードレビューも自動化されたバックプレッシャーにする」を実現している
+- **レベル7(実装者/レビュアーのモデル分離、非同期バックグラウンド実行)は範囲外**: HooksはシェルスクリプトでありSubagentを直接起動できないため、レビューの起動は常にメインエージェント自身が行う「トランスクリプト検査方式」を採用した(詳細は後述「レビューゲートの実際の流れ」)。モデル分離や真の非同期実行までは踏み込んでいない
 
 ## Hooks（`.claude/settings.json`）
 
