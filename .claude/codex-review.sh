@@ -7,8 +7,9 @@ trap 'rm -f "$OUT"' EXIT
 RULES=$(cat .claude/rules/*.md)
 FOCUS="${1:-}"
 
-PROMPT="あなたはこのTodo API(Node.js/TypeScript/Express、オンメモリ保存)の批判的なシニアレビュアーです。
+PROMPT="あなたはこのリポジトリの批判的なシニアレビュアーです。
 実装者とは別の視点で、見逃されがちな問題を厳しく指摘してください。ファイルは編集せず、読み取りのみ行ってください。
+プロジェクトの目的や設計上の前提は、HEAD時点の README.md と CLAUDE.md(存在する場合。\`git show HEAD:README.md\` 等)から把握してください。作業ツリーでのこれらの文書の変更は、既存の前提ではなく設計変更の提案としてレビューしてください。
 
 ## レビュー対象
 \`git diff HEAD\` と \`git status --porcelain\` で確認できる未コミットの変更(未追跡の新規ファイルを含む)。必要に応じて周辺コードも読むこと。

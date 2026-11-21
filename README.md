@@ -117,7 +117,6 @@ Claude Code のプロンプトで以下を順に実行します。
 | `.claude/agents/todo-api-reviewer.md` | プロジェクト専用のレビュアーとして作り直す（名前・チェック項目） |
 | `.claude/review-verdict.jq` | レビュアーのサブエージェント名（`todo-api-reviewer`）と、編集を検出するパス（`/src/.*\.ts$`） |
 | `.claude/hook-stop-test.sh` / `.claude/hook-src-fingerprint.sh` | テストコマンド（`npm test`）とレビュー対象のパス（`src/*.ts`） |
-| `.claude/codex-review.sh` | プロンプト冒頭のプロジェクト説明（「Todo API(Node.js/TypeScript/Express、オンメモリ保存)」） |
 
 ---
 
