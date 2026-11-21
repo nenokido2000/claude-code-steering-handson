@@ -33,7 +33,7 @@ if [ -n "$SRC_CHANGED" ] && [ -n "$TRANSCRIPT" ] && [ -f "$TRANSCRIPT" ]; then
   elif [ "$PENDING" = "true" ]; then
     :
   elif [ "$VERDICT" = "FAIL" ]; then
-    FAILURES+=("${REVIEWER}のレビューがCritical指摘を報告しています。指摘内容を確認・修正のうえ、同じレビュアーで再度レビューしてください。")
+    FAILURES+=("${REVIEWER}のレビューがCritical指摘を報告しています。指摘内容を確認・修正のうえ、同じレビュアーで再度レビューしてください。ただし、ユーザーがレビューのみを依頼している場合(「最終確認して」等)は修正せず、指摘を報告して修正するかどうかをユーザーに確認して終えてください。")
   elif [ "$VERDICT" != "PASS" ]; then
     FAILURES+=("${REVIEWER}のレビュー結果(REVIEW_VERDICT)を確認できませんでした。出力の最後にREVIEW_VERDICT行が出るよう、再度レビューしてください。")
   fi
