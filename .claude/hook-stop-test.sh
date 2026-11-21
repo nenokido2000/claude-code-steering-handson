@@ -18,13 +18,14 @@ if [ -n "$SRC_CHANGED" ] && [ -n "$TRANSCRIPT" ] && [ -f "$TRANSCRIPT" ]; then
   LAST_EDIT=$(echo "$VERDICT_JSON" | jq -r '.lastEdit // -1')
   REVIEW_LINE=$(echo "$VERDICT_JSON" | jq -r '.reviewLine // -1')
   VERDICT=$(echo "$VERDICT_JSON" | jq -r '.verdict // empty')
+  REVIEWER=$(echo "$VERDICT_JSON" | jq -r '.reviewer // "todo-api-reviewer"')
 
   if [ "$REVIEW_LINE" -lt "$LAST_EDIT" ]; then
-    FAILURES+=("src/配下のコードが変更されていますが、最新の変更に対してtodo-api-reviewerのレビューが実行されていません。todo-api-reviewerを実行してください。")
+    FAILURES+=("src/配下のコードが変更されていますが、最新の変更に対してレビューが実行されていません。todo-api-reviewerを実行してください(ユーザーがCodexでのレビューを求めている場合はcodex-reviewスキルを使用)。")
   elif [ "$VERDICT" = "FAIL" ]; then
-    FAILURES+=("todo-api-reviewerがCritical指摘を報告しています。指摘内容を確認・修正のうえ再度レビューしてください。")
+    FAILURES+=("${REVIEWER}のレビューがCritical指摘を報告しています。指摘内容を確認・修正のうえ、同じレビュアーで再度レビューしてください。")
   elif [ "$VERDICT" != "PASS" ]; then
-    FAILURES+=("todo-api-reviewerの実行結果(REVIEW_VERDICT)を確認できませんでした。同期呼び出し(run_in_background:false)でtodo-api-reviewerを実行し、完了を待ってください。")
+    FAILURES+=("${REVIEWER}のレビュー結果(REVIEW_VERDICT)を確認できませんでした。バックグラウンドではなく同期実行で再度レビューし、完了を待ってください。")
   fi
 fi
 

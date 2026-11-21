@@ -2,5 +2,6 @@ node_modules/
 dist/
 .claude/settings.local.json
 .claude/stop-test.log
+.claude/codex-review.log
 /tmp/
 .idea/

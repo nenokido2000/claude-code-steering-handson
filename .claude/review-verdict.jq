@@ -1,6 +1,6 @@
 [inputs] | to_entries
 | reduce .[] as $e (
-    {lastEdit: -1, reviewId: null, reviewLine: -1, verdict: null};
+    {lastEdit: -1, reviewId: null, reviewLine: -1, reviewer: null, verdict: null};
     . as $acc
     | ($e.value.message.content) as $raw
     | (if ($raw | type) == "array" then $raw else [] end) as $content
@@ -11,7 +11,10 @@
             .lastEdit = $e.key
           elif $c.type == "tool_use" and $c.name == "Agent"
              and $c.input.subagent_type == "todo-api-reviewer" then
-            .reviewId = $c.id | .reviewLine = $e.key | .verdict = null
+            .reviewId = $c.id | .reviewLine = $e.key | .reviewer = "todo-api-reviewer" | .verdict = null
+          elif $c.type == "tool_use" and $c.name == "Bash"
+             and (($c.input.command // "") | test("codex-review\\.sh")) then
+            .reviewId = $c.id | .reviewLine = $e.key | .reviewer = "codex" | .verdict = null
           else . end
         )
       elif $e.value.type == "user" and $acc.reviewId != null then

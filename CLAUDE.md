@@ -21,7 +21,8 @@ Step 1〜5は上記の「主要5指示配信メソッド」記事に基づくが
 参考: https://www.bassimeledath.com/blog/levels-of-agentic-engineering
 
 - **レベル6(ハーネスエンジニアリング/自動フィードバックループ)**: 既存の`npm test`ゲートに加えて、`todo-api-reviewer`によるコードレビューもStopフックのゲートに組み込んだ(`hook-stop-test.sh` + `.claude/review-verdict.jq`)。「テスト・型チェックだけでなくコードレビューも自動化されたバックプレッシャーにする」を実現している
-- **レベル7(実装者/レビュアーのモデル分離、非同期バックグラウンド実行)は範囲外**: HooksはシェルスクリプトでありSubagentを直接起動できないため、レビューの起動は常にメインエージェント自身が行う「トランスクリプト検査方式」を採用した(詳細は後述「レビューゲートの実際の流れ」)。モデル分離や真の非同期実行までは踏み込んでいない
+- **レベル7の一部(実装者/レビュアーのモデル分離)**: ユーザーが明示的に求めた場合のみ、`codex-review`スキルでOpenAI Codex CLIに批判的レビューを依頼できる。Codexの結果も`REVIEW_VERDICT`でレビューゲートを通過させられる(通常は`todo-api-reviewer`、重要な最終確認はCodex、という切り替え)
+- **レベル7の非同期バックグラウンド実行は範囲外**: HooksはシェルスクリプトでありSubagentを直接起動できないため、レビューの起動は常にメインエージェント自身が行う「トランスクリプト検査方式」を採用した(詳細は後述「レビューゲートの実際の流れ」)。モデル分離や真の非同期実行までは踏み込んでいない
 
 ## Hooks（`.claude/settings.json`）
 
@@ -30,7 +31,7 @@ Step 1〜5は上記の「主要5指示配信メソッド」記事に基づくが
 - `SubagentStop`（todo-api-tester|todo-api-reviewer完了時）: `hook-subagent-notify.sh` で通知音を鳴らす
 - `Stop`（応答完了時）: `hook-stop-test.sh` で以下2つをチェックし、失敗時は1回だけブロックしてClaudeに自律修正を促す（`stop_hook_active` で無限ループを防止。修正後も直っていなければ `systemMessage` でユーザーに警告する）
   - `npm test` を自動実行
-  - `src/**/*.ts` に変更がある場合、`.claude/review-verdict.jq` で会話トランスクリプトを解析し、最新の変更に対して `todo-api-reviewer` が実行済みか、その結果(`REVIEW_VERDICT: PASS/FAIL`)にCritical指摘が残っていないかを検証する（レベル6: コードレビューもテストと同様の自動フィードバックループにする）
+  - `src/**/*.ts` に変更がある場合、`.claude/review-verdict.jq` で会話トランスクリプトを解析し、最新の変更に対して `todo-api-reviewer` または `.claude/codex-review.sh`(`codex-review`スキル) が実行済みか、その結果(`REVIEW_VERDICT: PASS/FAIL`)にCritical指摘が残っていないかを検証する（レベル6: コードレビューもテストと同様の自動フィードバックループにする）
 
 ### レビューゲートの実際の流れ（誤解しやすいポイント）
 
@@ -48,6 +49,12 @@ Step 1〜5は上記の「主要5指示配信メソッド」記事に基づくが
 
 - `todo-api-reviewer`: `.claude/rules/` のルールとリソース命名規則への準拠をチェックするコードレビューアー。出力の最後に必ず `REVIEW_VERDICT: PASS`/`FAIL` を1行出力し、Stopフックのレビューゲートが機械的に判定できるようにしている。**Stopフックのゲート用に呼ぶ場合は `run_in_background: false` を指定し、結果が返るまで待つこと**(バックグラウンド実行だと結果がその場のトランスクリプトに残らず、Stopフックが「レビュー未実施」として扱うため)
 - `todo-api-tester`: devサーバーを起動しcurlでエンドポイントの動作を実地確認するエージェント
+
+## Codexレビュー（`.claude/skills/codex-review/` + `.claude/codex-review.sh`）
+
+- 「Codexでレビューして」「最終確認して」等、ユーザーが明示的に求めた場合のみ使う。通常のレビューは `todo-api-reviewer`
+- `codex exec --sandbox read-only --ephemeral` で毎回新規セッションとして実行し、`.claude/rules/*.md` をプロンプトに埋め込んでルール準拠＋ルール外の重大な問題を批判的にレビューさせる。最終行の `REVIEW_VERDICT` をStopフックがtodo-api-reviewerと同様に判定する
+- MCPではなくCLIを直接呼ぶ。前提として `codex login`(ChatGPTプラン)が必要。1回あたり数十秒〜数分かかるため、Bashの `timeout: 600000` を指定し、バックグラウンド実行はしない
 
 ## サンプルアプリ構成（Todo API）
 
