@@ -26,6 +26,7 @@ Step 1〜5は上記の「主要5指示配信メソッド」記事に基づくが
 
 ## Hooks（`.claude/settings.json`）
 
+- `SessionStart`: `hook-session-baseline.sh` でセッション開始時点の `src/` 差分の指紋(`hook-src-fingerprint.sh`)を `.claude/session-baseline/<session_id>` に記録する。Stop時に指紋が変わっていなければ、そのセッションは `src/` を変更していないとみなしてレビューゲートをスキップする(他セッションの未コミット変更で無関係なセッションがブロックされるのを防ぐ。Edit/WriteだけでなくBash経由の編集も検出できる)
 - `PostToolUse`（Edit|Write時）: `hook-tsc.sh` で型チェックを自動実行
 - `PreToolUse`（Bash時）: `rm -rf` を含むコマンドをブロック
 - `SubagentStop`（todo-api-tester|todo-api-reviewer完了時）: `hook-subagent-notify.sh` で通知音を鳴らす
@@ -39,15 +40,16 @@ Step 1〜5は上記の「主要5指示配信メソッド」記事に基づくが
 
 1. Claudeがコードを編集し、応答を終えようとする → `Stop`発火 → `hook-stop-test.sh`実行
 2. この時点では`todo-api-reviewer`はまだ呼ばれていないため、jqは「レビュー未実施」と判定 → `decision: block`（`reason`に「todo-api-reviewerを実行してください」等）
-3. Claudeはblock理由を見て、**自分の判断で**`todo-api-reviewer`を`run_in_background: false`で起動する
-4. `todo-api-reviewer`が`REVIEW_VERDICT: PASS/FAIL`を含む結果をトランスクリプトに残す。FAILならClaudeはCritical指摘を見て自律的にコード修正を試みる
-5. Claudeが再度応答を終えようとする → `Stop`が再発火（`stop_hook_active: true`）→ `hook-stop-test.sh`が`REVIEW_VERDICT`を検出して最終判定
+3. Claudeはblock理由を見て、**自分の判断で**`todo-api-reviewer`を起動する。この環境のサブエージェントは常にバックグラウンドで起動し、Agentツールの戻り値には`agentId`しか入らない
+4. 結果待ちの間に応答を終えようとしても、jqは「起動済み・結果待ち(`pending`)」と判定してブロックしない
+5. サブエージェントが完了すると、完了報告(`origin.handback: true`、本文は`origin.handbackReportText`)がトランスクリプトに届き、Claudeの新しいターンが始まる。jqは起動時の`agentId`と完了報告の`origin.from`を照合し、本文の最後の`REVIEW_VERDICT`行を読む
+6. そのターンの終わりの`Stop`で最終判定する。FAILならblockし、Claudeは指摘を見て自律的にコード修正を試みる
 
-`npm test`のチェックと同じ`stop_hook_active`ガードを共有しているため、**強制できるのは実質1往復まで**。ステップ5で`FAIL`のままでも、`stop_hook_active: true`なら再ブロックはせず`systemMessage`で警告するだけに留まる（無限ループ防止）。「Critical指摘がある限り無限に自律修正し続ける」わけではない。
+`npm test`のチェックと同じ`stop_hook_active`ガードを共有しているため、**1ターン内で強制できるのは1往復まで**。FAILのままでも、`stop_hook_active: true`なら再ブロックはせず`systemMessage`で警告するだけに留まる（無限ループ防止）。「Critical指摘がある限り無限に自律修正し続ける」わけではない。また、完了報告が届かなかった場合(サブエージェントの異常終了など)は結果待ちのまま通過する。
 
 ## Subagents（`.claude/agents/`）
 
-- `todo-api-reviewer`: `.claude/rules/` のルールとリソース命名規則への準拠をチェックするコードレビューアー。出力の最後に必ず `REVIEW_VERDICT: PASS`/`FAIL` を1行出力し、Stopフックのレビューゲートが機械的に判定できるようにしている。**Stopフックのゲート用に呼ぶ場合は `run_in_background: false` を指定し、結果が返るまで待つこと**(バックグラウンド実行だと結果がその場のトランスクリプトに残らず、Stopフックが「レビュー未実施」として扱うため)
+- `todo-api-reviewer`: `.claude/rules/` のルールとリソース命名規則への準拠をチェックするコードレビューアー。出力の最後に必ず `REVIEW_VERDICT: PASS`/`FAIL` を1行出力し、Stopフックのレビューゲートが機械的に判定できるようにしている。バックグラウンドで起動され、結果は完了報告としてトランスクリプトに届く(上記「レビューゲートの実際の流れ」参照)
 - `todo-api-tester`: devサーバーを起動しcurlでエンドポイントの動作を実地確認するエージェント
 
 ## Codexレビュー（`.claude/skills/codex-review/` + `.claude/codex-review.sh`）

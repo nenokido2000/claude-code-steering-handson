@@ -3,5 +3,6 @@ dist/
 .claude/settings.local.json
 .claude/stop-test.log
 .claude/codex-review.log
+.claude/session-baseline/
 /tmp/
 .idea/
