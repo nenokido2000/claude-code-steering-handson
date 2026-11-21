@@ -31,7 +31,7 @@ Step 1〜5は上記の「主要5指示配信メソッド」記事に基づくが
 - `SubagentStop`（todo-api-tester|todo-api-reviewer完了時）: `hook-subagent-notify.sh` で通知音を鳴らす
 - `Stop`（応答完了時）: `hook-stop-test.sh` で以下2つをチェックし、失敗時は1回だけブロックしてClaudeに自律修正を促す（`stop_hook_active` で無限ループを防止。修正後も直っていなければ `systemMessage` でユーザーに警告する）
   - `npm test` を自動実行
-  - `src/**/*.ts` に変更がある場合、`.claude/review-verdict.jq` で会話トランスクリプトを解析し、最新の変更に対して `todo-api-reviewer` または `.claude/codex-review.sh`(`codex-review`スキル) が実行済みか、その結果(`REVIEW_VERDICT: PASS/FAIL`)にCritical指摘が残っていないかを検証する（レベル6: コードレビューもテストと同様の自動フィードバックループにする）
+  - `src/` 配下の `.ts` に変更(未追跡の新規ファイル含む)がある場合、`.claude/review-verdict.jq` で会話トランスクリプトを解析し、最新の変更に対して `todo-api-reviewer` または `.claude/codex-review.sh`(`codex-review`スキル) が実行済みか、その結果(`REVIEW_VERDICT: PASS/FAIL`)にCritical指摘が残っていないかを検証する（レベル6: コードレビューもテストと同様の自動フィードバックループにする）
 
 ### レビューゲートの実際の流れ（誤解しやすいポイント）
 

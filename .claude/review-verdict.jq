@@ -13,21 +13,21 @@
              and $c.input.subagent_type == "todo-api-reviewer" then
             .reviewId = $c.id | .reviewLine = $e.key | .reviewer = "todo-api-reviewer" | .verdict = null
           elif $c.type == "tool_use" and $c.name == "Bash"
-             and (($c.input.command // "") | test("codex-review\\.sh")) then
+             and (($c.input.command // "") | test("^\\s*\\.claude/codex-review\\.sh(\\s|$)")) then
             .reviewId = $c.id | .reviewLine = $e.key | .reviewer = "codex" | .verdict = null
           else . end
         )
       elif $e.value.type == "user" and $acc.reviewId != null then
         reduce $content[] as $c ($acc;
-          if $c.type == "tool_result" and $c.tool_use_id == $acc.reviewId then
+          if $c.type == "tool_result" and $c.tool_use_id == $acc.reviewId
+             and ($c.is_error // false) == false then
             (if ($c.content | type) == "array"
              then [$c.content[]? | (.text? // empty)] | join("\n")
              else ($c.content // "") end) as $t
-            | .verdict = (
-                if ($t | test("REVIEW_VERDICT: FAIL")) then "FAIL"
-                elif ($t | test("REVIEW_VERDICT: PASS")) then "PASS"
-                else .verdict end
-              )
+            | ([$t | split("\n")[]
+                | capture("^\\s*REVIEW_VERDICT: (?<v>PASS|FAIL)\\s*$")?
+                | .v] | last) as $v
+            | .verdict = ($v // .verdict)
           else . end
         )
       else $acc end

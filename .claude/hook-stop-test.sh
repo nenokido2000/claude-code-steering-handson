@@ -12,7 +12,7 @@ if [ $? -ne 0 ]; then
   FAILURES+=("npm testが失敗しています。.claude/stop-test.logを確認し、修正してください。")
 fi
 
-SRC_CHANGED=$(git diff --name-only HEAD -- 'src/**/*.ts' 2>/dev/null)
+SRC_CHANGED=$( (git diff --name-only HEAD -- 'src/*.ts'; git ls-files --others --exclude-standard -- 'src/*.ts') 2>/dev/null)
 if [ -n "$SRC_CHANGED" ] && [ -n "$TRANSCRIPT" ] && [ -f "$TRANSCRIPT" ]; then
   VERDICT_JSON=$(jq -c -n -f .claude/review-verdict.jq "$TRANSCRIPT" 2>/dev/null)
   LAST_EDIT=$(echo "$VERDICT_JSON" | jq -r '.lastEdit // -1')
