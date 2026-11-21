@@ -16,8 +16,8 @@ fi
 SRC_CHANGED=$( (git diff --name-only HEAD -- 'src/*.ts'; git ls-files --others --exclude-standard -- 'src/*.ts') 2>/dev/null)
 
 BASELINE=".claude/session-baseline/$SESSION_ID"
-if [ -n "$SESSION_ID" ] && [ -f "$BASELINE" ] && [ "$(cat "$BASELINE")" = "$(.claude/hook-src-fingerprint.sh)" ]; then
-  SRC_CHANGED=""
+if [ -n "$SESSION_ID" ] && [ -s "$BASELINE" ]; then
+  CURRENT_FP=$(.claude/hook-src-fingerprint.sh) && [ -n "$CURRENT_FP" ] && [ "$(cat "$BASELINE")" = "$CURRENT_FP" ] && SRC_CHANGED=""
 fi
 
 if [ -n "$SRC_CHANGED" ] && [ -n "$TRANSCRIPT" ] && [ -f "$TRANSCRIPT" ]; then

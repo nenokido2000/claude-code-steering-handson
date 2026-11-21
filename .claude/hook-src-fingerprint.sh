@@ -1,5 +1,6 @@
 #!/bin/bash
 cd "$(dirname "$0")/.."
+git rev-parse --verify -q HEAD >/dev/null || exit 1
 
 {
   git diff HEAD -- 'src/*.ts'

@@ -26,7 +26,7 @@ Step 1〜5は上記の「主要5指示配信メソッド」記事に基づくが
 
 ## Hooks（`.claude/settings.json`）
 
-- `SessionStart`: `hook-session-baseline.sh` でセッション開始時点の `src/` 差分の指紋(`hook-src-fingerprint.sh`)を `.claude/session-baseline/<session_id>` に記録する。Stop時に指紋が変わっていなければ、そのセッションは `src/` を変更していないとみなしてレビューゲートをスキップする(他セッションの未コミット変更で無関係なセッションがブロックされるのを防ぐ。Edit/WriteだけでなくBash経由の編集も検出できる)
+- `SessionStart`: `hook-session-baseline.sh` でセッション開始時点の `src/` 差分の指紋(`hook-src-fingerprint.sh`)を `.claude/session-baseline/<session_id>` に記録する。記録するのは新しく始まったセッション(`source` が `startup` / `clear`)だけで、`resume` / `compact` では記録しない(途中で記録すると、そのセッション自身のレビュー前の差分を免除してしまうため)。指紋が取れない場合(HEADが無い等)は記録も免除もしない。Stop時に指紋が変わっていなければ、そのセッションは `src/` を変更していないとみなしてレビューゲートをスキップする(他セッションの未コミット変更で無関係なセッションがブロックされるのを防ぐ。Edit/WriteだけでなくBash経由の編集も検出できる)
 - `PostToolUse`（Edit|Write時）: `hook-tsc.sh` で型チェックを自動実行
 - `PreToolUse`（Bash時）: `rm -rf` を含むコマンドをブロック
 - `SubagentStop`（todo-api-tester|todo-api-reviewer完了時）: `hook-subagent-notify.sh` で通知音を鳴らす
